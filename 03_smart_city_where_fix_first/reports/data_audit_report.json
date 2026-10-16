@@ -1,0 +1,237 @@
+{
+  "timestamp": "2026-10-16T10:52:23.559775",
+  "locations": {
+    "shape": [
+      1000,
+      10
+    ],
+    "columns": [
+      "location_id",
+      "zone",
+      "road_type",
+      "road_condition",
+      "population_density_per_km2",
+      "near_school",
+      "near_hospital",
+      "pedestrian_activity",
+      "latitude",
+      "longitude"
+    ],
+    "dtypes": {
+      "location_id": "object",
+      "zone": "object",
+      "road_type": "object",
+      "road_condition": "object",
+      "population_density_per_km2": "int64",
+      "near_school": "int64",
+      "near_hospital": "int64",
+      "pedestrian_activity": "object",
+      "latitude": "float64",
+      "longitude": "float64"
+    },
+    "null_counts": {
+      "location_id": 0,
+      "zone": 0,
+      "road_type": 0,
+      "road_condition": 0,
+      "population_density_per_km2": 0,
+      "near_school": 0,
+      "near_hospital": 0,
+      "pedestrian_activity": 0,
+      "latitude": 0,
+      "longitude": 0
+    },
+    "numeric_stats": {
+      "population_density_per_km2": {
+        "count": 1000.0,
+        "mean": 12719.77,
+        "std": 7026.437579610322,
+        "min": 507.0,
+        "25%": 6632.5,
+        "50%": 12698.5,
+        "75%": 18735.0,
+        "max": 24983.0
+      },
+      "near_school": {
+        "count": 1000.0,
+        "mean": 0.286,
+        "std": 0.45211548127487106,
+        "min": 0.0,
+        "25%": 0.0,
+        "50%": 0.0,
+        "75%": 1.0,
+        "max": 1.0
+      },
+      "near_hospital": {
+        "count": 1000.0,
+        "mean": 0.155,
+        "std": 0.36208577175319395,
+        "min": 0.0,
+        "25%": 0.0,
+        "50%": 0.0,
+        "75%": 0.0,
+        "max": 1.0
+      },
+      "latitude": {
+        "count": 1000.0,
+        "mean": 16.446045251,
+        "std": 0.07941063153031869,
+        "min": 16.186032,
+        "25%": 16.395854,
+        "50%": 16.446205,
+        "75%": 16.4977765,
+        "max": 16.706502
+      },
+      "longitude": {
+        "count": 1000.0,
+        "mean": 80.499899168,
+        "std": 0.0801605794571789,
+        "min": 80.248067,
+        "25%": 80.4463875,
+        "50%": 80.50139300000001,
+        "75%": 80.55202875,
+        "max": 80.818627
+      }
+    }
+  },
+  "incidents": {
+    "shape": [
+      10000,
+      9
+    ],
+    "columns": [
+      "incident_id",
+      "location_id",
+      "timestamp",
+      "incident_type",
+      "severity",
+      "injuries",
+      "reported_by",
+      "resolved",
+      "resolution_hours"
+    ],
+    "dtypes": {
+      "incident_id": "object",
+      "location_id": "object",
+      "timestamp": "object",
+      "incident_type": "object",
+      "severity": "object",
+      "injuries": "int64",
+      "reported_by": "object",
+      "resolved": "int64",
+      "resolution_hours": "float64"
+    },
+    "null_counts": {
+      "incident_id": 0,
+      "location_id": 0,
+      "timestamp": 0,
+      "incident_type": 0,
+      "severity": 0,
+      "injuries": 0,
+      "reported_by": 0,
+      "resolved": 0,
+      "resolution_hours": 0
+    },
+    "numeric_stats": {
+      "injuries": {
+        "count": 10000.0,
+        "mean": 0.2475,
+        "std": 0.4998687196391542,
+        "min": 0.0,
+        "25%": 0.0,
+        "50%": 0.0,
+        "75%": 0.0,
+        "max": 3.0
+      },
+      "resolved": {
+        "count": 10000.0,
+        "mean": 0.7126,
+        "std": 0.4525723391594069,
+        "min": 0.0,
+        "25%": 0.0,
+        "50%": 1.0,
+        "75%": 1.0,
+        "max": 1.0
+      },
+      "resolution_hours": {
+        "count": 10000.0,
+        "mean": 32.24485,
+        "std": 22.532168323053906,
+        "min": 1.0,
+        "25%": 15.8,
+        "50%": 27.1,
+        "75%": 43.3,
+        "max": 191.9
+      }
+    }
+  },
+  "complaints": {
+    "shape": [
+      8000,
+      7
+    ],
+    "columns": [
+      "complaint_id",
+      "location_id",
+      "created_at",
+      "category",
+      "priority_reported",
+      "status",
+      "days_to_resolution"
+    ],
+    "dtypes": {
+      "complaint_id": "object",
+      "location_id": "object",
+      "created_at": "object",
+      "category": "object",
+      "priority_reported": "object",
+      "status": "object",
+      "days_to_resolution": "float64"
+    },
+    "null_counts": {
+      "complaint_id": 0,
+      "location_id": 0,
+      "created_at": 0,
+      "category": 0,
+      "priority_reported": 0,
+      "status": 0,
+      "days_to_resolution": 0
+    },
+    "numeric_stats": {
+      "days_to_resolution": {
+        "count": 8000.0,
+        "mean": 6.0426375,
+        "std": 4.33320036136863,
+        "min": 0.1,
+        "25%": 2.8,
+        "50%": 5.0,
+        "75%": 8.1,
+        "max": 31.3
+      }
+    }
+  },
+  "joins": {
+    "location_count": 1000,
+    "incident_locations": 1000,
+    "complaint_locations": 1000,
+    "incident_coverage": 100.0,
+    "complaint_coverage": 100.0,
+    "orphaned_incidents": 0,
+    "orphaned_complaints": 0,
+    "locations_with_both": 1000
+  },
+  "insights": {
+    "insights": [
+      "Dataset spans approximately 364 days",
+      "Resolution rate: Incidents 71.3%, Complaints 57.0%",
+      "Top hotspot: L0362 with 23 incidents",
+      "Most common complaint: Road damage (1361 cases)"
+    ],
+    "quality_issues": [],
+    "date_range_days": 364,
+    "resolution_rates": {
+      "incidents": 71.26,
+      "complaints": 57.025000000000006
+    }
+  }
+}

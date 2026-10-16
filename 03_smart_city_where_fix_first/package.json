@@ -1,0 +1,24 @@
+{
+  "name": "Sudhar",
+  "version": "1.0.0",
+  "description": "Sudhar - Smart City Priority System for DATATHON 2026",
+  "type": "module",
+  "scripts": {
+    "dev": "concurrently \"npm run dev:api\" \"npm run dev:web\"",
+    "dev:web": "cd web && npm run dev",
+    "dev:api": "cd api && uvicorn main:app --reload --host 0.0.0.0 --port 8000",
+    "build": "cd web && npm run build",
+    "preview": "cd web && npm run preview",
+    "install:all": "cd web && npm install && cd ../cli && pip install -e .",
+    "train": "cd ml && python train_all.py",
+    "ingest": "cd api && python seed_data.py"
+  },
+  "keywords": [
+    "smart-city",
+    "civic-tech",
+    "datathon",
+    "ml"
+  ],
+  "author": "Team Sudhar",
+  "license": "MIT"
+}

@@ -1,0 +1,153 @@
+ROLE
+You are a principal engineer and product designer building a winning entry for DATATHON 2026 (VIT-AP), Track 3: "Where Should We Fix First?" (Smart City). Build an international-quality, demo-ready product called Sudhar. Every decision must be justified by the judging rubric and a working demo.
+
+BEFORE STARTING - USER INTERFACE SHOULD MAINLY BE FOR THE MOBILE VIEW AND ADMIN PORTAL INTERFACE SHOULD BE FOR LAPTOP/DEKSTOP VIEW, SO ADJUST UI/UX AND ALLIGNMENT ACCORDINGLY
+
+JUDGING RUBRIC (100 marks, optimize for this)
+- Problem understanding & user need: 10
+- Provided dataset usage (meaningful joins, features, data-driven decisions): 10
+- Data Science / ML quality (baseline, evaluation, reasoning): 15
+- ML model FROM SCRATCH: 25 (highest marks. Models must be implemented by us in NumPy and trained on the provided data. No sklearn/torch/xgboost for the core models. Any API use must be declared and only supporting.)
+- Working product & workflow (end-to-end, usable, reliable): 20
+- USP & innovation: 10
+- Impact, feasibility, responsible use: 5
+- Demo & presentation: 5
+
+THE DATASET (Track 3, synthetic, in ./data/)
+locations.csv (1,000 rows, context attributes), incidents.csv (10,000), public_complaints.csv (8,000). Join key: location_id.
+FIRST ACTION: read the README.txt and print headers, dtypes, null counts and value distributions of every CSV. Design the schema from the real columns. Do NOT invent columns. If a field I describe below doesn't exist, derive it or say so.
+The coordinates are synthetic. State this in the UI footer, README and slides. Never claim they are real places.
+
+PRODUCT VISION
+"Not an unexplained risk score. A transparent civic triage engine. Citizens report in one tap, ML ranks what to fix first with reasons and confidence, admins verify, the government verifies, crews fix, and citizens confirm and get rewarded."
+Answers the track's question: "Which locations should be reviewed first, based on what evidence, and what information is still missing?"
+
+THREE PORTALS + CLI (one monorepo)
+1. Citizen app (mobile-first PWA)
+2. Municipal Admin portal (responsive web dashboard)
+3. Government Verification portal (separate role and route; simulates a state/central govt system)
+4. `Sudhar` terminal tool (for ML ops and demo)
+
+TECH STACK (keep it shippable in one day)
+- Frontend: Vite + React + TypeScript + Tailwind + shadcn/ui-style components, Zustand, React Router, Leaflet (map), Recharts, vite-plugin-pwa, html5-qrcode (scanner), qrcode.react (generator), i18next.
+- Backend: FastAPI + SQLite (SQLAlchemy). Photos stored on local disk in /uploads, served statically. Simple JWT mock auth.
+- ML: pure NumPy/pandas implementations in /ml (no sklearn for core models). Artifacts saved as .npz/.json. sklearn/matplotlib are allowed only for evaluation helpers or plots, never for the models themselves.
+- CLI: Typer + Rich.
+- One command to run everything: `make dev` (and `docker-compose up` as a bonus). Seed script loads the CSVs into the DB.
+
+AUTH (MOCK, but architected for real)
+Login screen with role selector. Demo accounts: citizen@demo / admin@demo / govt@demo (one-click "Login as" chips, no real passwords). Use JWT + role-based route guards, so swapping to real OIDC/Aadhaar-style SSO later is a config change. Put the integration behind an adapter interface, e.g. `AuthProvider` and `GovtGateway`.
+
+CITIZEN APP (the core of the demo)
+Mobile-first, thumb-friendly. Bottom nav: Home, Map, [big center REPORT button], Rewards, Profile.
+- Instant Report flow (target: under 20 seconds, 3 taps):
+  1. Floating Report button is always visible (also on the splash screen). It opens the camera directly (input capture=environment) with the option to pick from the gallery.
+  2. Multiple photos (up to 4), compressed client-side (max 1280px, JPEG 0.7) with a preview strip.
+  3. Auto-capture GPS via the Geolocation API, snap to the nearest dataset location_id, show a mini map pin the user can drag. Address field auto-filled (offline reverse-lookup against the dataset's location names or zones if available, otherwise manual entry). Landmark note field.
+  4. Category chips with icons: Pothole/Road damage, Flooding/Waterlogging, Drainage, Streetlight, Traffic/Signal, Pedestrian safety, Garbage, Other. Free-text description with a mic button (Web Speech API, optional).
+  5. Smart suggestion: the from-scratch text classifier suggests a category and severity from the description, shown as "Suggested: Drainage (87%)" which the user can override.
+  6. Duplicate check: before submitting, show "3 people already reported this nearby. Add your report as +1?" Merging boosts the location's priority.
+  7. Submit gives a ticket ID, a confetti/success animation, "+10 points", and a shareable status link.
+- Offline-first: if there is no network, queue the report in IndexedDB with photos and auto-sync on reconnect (Background Sync with a fallback). Show a "Queued, will send when online" badge.
+- QR SCANNER: a Scan button on the Home screen. City assets (streetlight poles, drains, bus stops, road-segment boards) carry QR codes encoding Sudhar://asset/{location_id}. Scanning opens the report form with the location pre-filled, which is more accurate than GPS and gives anti-spoof proof of presence. Also support scanning "Fix Verification" QRs on completed works (see Rewards). Ship a "QR Generator & Printable Sheet" page in the Admin portal that produces printable A4 sheets of asset QR codes, plus 5 demo QRs shown on screen so judges can scan them with a phone.
+- My Reports: timeline per ticket (Submitted, AI-triaged, Admin verified, Govt verified, Assigned, In progress, Fixed, Citizen confirmed). Show before/after photos in a drag slider. Push-style in-app notifications (mock) for each status change.
+- Public Map: clustered pins coloured by severity/status, filters, a "Near me" button, and a heat layer toggle.
+- Rewards & gamification ("CivicCoins"):
+  - Points: report +10, report verified by admin +25, govt-verified +50, fixed on your report +100, confirming a fix with an after-photo or QR scan +30, helpful +1 on a duplicate +5, 7-day streak bonus.
+  - Penalties: rejected or fake reports -20, repeated spam leads to a temporary rate limit.
+  - Trust Score (0 to 100) affects how much weight a citizen's report carries in the priority ranking.
+  - Levels (Observer, Guardian, Champion, City Hero), badges (First Report, Flood Watcher, Night Owl for streetlights, etc.), a ward leaderboard and a personal impact card ("Your reports led to 3 fixes, about 1,200 commuters benefit"). Impact is estimated from the dataset's traffic or context fields, and must be labeled "estimated".
+  - Redeem catalog (mock): bus pass discount, tax rebate coupon, plant-a-tree donation, certificate of appreciation as a downloadable PDF.
+- Profile: language switch (English, Telugu, Hindi), dark mode, accessibility (large text, high contrast), data and privacy page.
+- Public transparency page: city-wide resolution stats, median fix time per category/ward, "Wall of Fixed" before/after gallery.
+
+ADMIN PORTAL (municipal operations)
+Responsive; a sidebar on desktop and a bottom sheet on mobile.
+- Command Center: KPI cards (open tickets, median resolution time, SLA breaches, anomaly alerts, citizen satisfaction), live map with the ranked queue, trend sparklines.
+- Priority Queue (hero feature): ranked list of locations, each row showing Priority Score, Confidence, top-3 reasons, and a "Missing information" flag (for example "no inspection in 90 days", "no photo evidence", "single reporter only"). Click opens the Explain Panel, which shows a per-feature contribution bar chart (SHAP-style additive contributions computed from our own model), photos, incident timeline, similar past cases, and the predicted resolution time with a confidence interval.
+- Ticket Inbox: filter by category, ward, status, severity. Review photos, a zoomable gallery, and EXIF/GPS vs claimed location mismatch warnings. Actions: Verify, Reject (with reason), Merge duplicates, Assign crew, Request more info, Escalate to Govt.
+- Intervention Simulator + Budget Optimizer: inputs for crews or budget and for time horizon, outputs an optimal allocation (knapsack/greedy with a proven baseline comparison) and what-if scenarios ("Fix top 10 flooding spots vs top 10 road defects: expected incidents prevented"). Show the improvement over the naive "most complaints first" baseline.
+- Trend & Anomaly Monitor: complaint/incident volume forecasts per zone with spike alerts ("Zone 7 flooding +3.2σ vs expected").
+- Resolution-Time Dashboard: predicted vs actual, SLA tracker by category.
+- Fairness & Equity Audit: checks whether low-complaint zones are being under-served, because less-connected areas file fewer complaints. Show the under-reporting adjustment, with ranking before and after. This is a key differentiator.
+- Crew Management (light): crew list, assignments, the field-verification QR to scan at the site (proof of work), and upload of the after photo.
+- Reports export (CSV/PDF) and an audit log.
+
+GOVERNMENT VERIFICATION PORTAL (simulated connection)
+- Separate login, route (/govt) and visual identity (formal, minimal).
+- Receives tickets that the admin escalates, through a mock "Govt Gateway" API (REST + webhook simulation, with an async queue and a "Sync status" indicator). Make the connection visible: a handshake/status widget on the admin side showing "Connected to National Civic Gateway (simulated)".
+- Verification queue: review the evidence packet (photos, geotag, ML score and explanation, admin notes, citizen trust score). Actions: Approve, Reject, Request clarification, Sanction funds (mock amount), Flag for audit.
+- Every decision is written to a tamper-evident audit trail: a hash-chained ledger (each entry stores the SHA-256 of the previous entry), with a "Verify integrity" button that recomputes the chain. Display a verification certificate with a QR code that anyone can scan to confirm authenticity.
+- Govt dashboard: sanctioned vs spent, approval turnaround time, ward-wise compliance.
+- The code must clearly show where a real government API (for example a CPGRAMS / state grievance portal-style integration) would plug in. Document it in the README as "Integration roadmap". Do NOT claim a real integration exists.
+
+STATUS WORKFLOW (single source of truth, shown identically in all portals)
+Submitted, then AI-triaged, then Admin-verified, then Escalated, then Govt-verified (funds sanctioned), then Assigned, then In-progress, then Fixed (after photo and QR proof), then Citizen-confirmed, then Closed (rewards released). Plus the Rejected and Needs-info branches.
+
+ML (FROM SCRATCH, NumPy) — Rubric priority. Each model needs a baseline, a proper split, metrics, and an honest evaluation.
+1. Priority scoring: a transparent weighted formula (severity × frequency × recency decay × traffic/context exposure × complaint density × citizen trust) PLUS a learned component. Weights are shown in the UI and adjustable by the admin. Output is a score, a confidence, and the top contributing reasons. Confidence should come from data volume, agreement between sources and recency.
+2. Resolution-time regressor: gradient-boosted regression trees implemented from scratch (histogram-based splits, MSE loss, shrinkage, early stopping), with a Ridge regression from scratch as a second model. Baseline: per-category median. Metrics: MAE, RMSE, and calibration of prediction intervals (quantile or residual-based). Time-aware split.
+3. Incident forecaster: per location and per week (or month) counts predicted by Poisson regression from scratch (gradient descent) with lag, seasonality and complaint-lag features. Baseline: last-period and moving average. Metrics: MAE, Poisson deviance, and top-k hit rate (of the 50 locations we ranked highest, how many actually had incidents next period). Strict time-aware split, no leakage.
+4. Complaint text classifier: TF-IDF built from scratch plus multinomial softmax regression from scratch (and a Naive Bayes baseline). Metrics: macro-F1 and a confusion matrix. Used for category/severity suggestions in the citizen app. If the complaints data has no free text, derive the best available signal and say so honestly.
+5. Anomaly detector: seasonal EWMA plus a robust z-score (median/MAD) per zone and category, with an evaluation using injected synthetic spikes (recall and false-alarm rate, clearly labeled as synthetic injection).
+6. Budget optimizer: 0/1 knapsack DP and a greedy comparison, reporting the gain over the naive baseline.
+- Photos are EVIDENCE, not model input. Do not claim image AI unless we actually train one. If you add an optional pretrained API anywhere, it must be declared in the UI and slides as "supporting only".
+- Produce: a MODEL_CARD.md (data, splits, metrics, limitations), an evaluation report with plots saved to /reports, feature importance, and a reproducible `make train` with a fixed random seed. Print real numbers only. Never fabricate metrics.
+- Explainability: every score has additive per-feature contributions. Every list item has reasons, confidence and "what's missing".
+
+SEED & DEMO DATA
+Load the provided CSVs for the ML and the map. Also generate realistic demo tickets (with royalty-free placeholder or generated images) so every screen looks alive for the demo: 40 tickets across all statuses, 12 citizens with varied trust scores, a leaderboard, 5 completed before/after fixes.
+
+CLI TOOL `Sudhar` (for the terminal demo; make it look sharp with Rich panels, tables, progress bars and colour)
+  Sudhar ingest ./data          validate, join, print the schema report and data-quality findings
+  Sudhar eda                    key insights with terminal bar charts (top categories, hotspots, resolution-time distribution)
+  Sudhar train --all            train every model, a live progress bar and loss, and print the baseline vs ours table
+  Sudhar evaluate               metrics table plus time-aware split details
+  Sudhar rank --top 10 --crews 12   the ranked queue with score, confidence and reasons
+  Sudhar explain LOC-xxxx       per-feature contribution bars plus the missing-info flags
+  Sudhar simulate --budget N    optimizer output vs the naive baseline
+  Sudhar anomalies              current spike alerts
+  Sudhar fairness               before/after equity-adjusted ranking
+  Sudhar verify-chain           recompute and verify the govt audit ledger hash chain
+  Sudhar serve                  start the API and web app
+  Sudhar demo                   scripted end-to-end "show" run for the stage, with pauses
+Add a stylish ASCII banner and a `--json` flag on commands.
+
+PWA & MOBILE REQUIREMENTS (non-negotiable)
+- Fully responsive, designed mobile-first at 360px width, tested at 360, 390, 768 and 1280.
+- Installable PWA: a valid manifest (name, icons 192/512/maskable, theme colour, standalone display, shortcuts for "Report now" and "Scan QR"), service worker with offline caching, and a custom "Install Sudhar" banner using beforeinstallprompt. On iOS Safari, show a friendly "Share, then Add to Home Screen" guide sheet. The install prompt must be visible on first mobile visit and dismissible, and must not reappear once installed.
+- Lighthouse targets: PWA installable, performance 90+, accessibility 95+.
+- Touch targets of at least 44px, a safe-area inset for the notch, a sticky bottom nav, pull-to-refresh, skeleton loaders, optimistic UI, haptic feedback via navigator.vibrate where available.
+
+UI/UX DIRECTION
+- A distinctive, modern civic-tech aesthetic (not a generic template): a calm, high-contrast palette, bold typography (for example Inter or Plus Jakarta Sans plus a display face), generous spacing, rounded cards, meaningful micro-animations, and illustrated empty states.
+- Status and severity colour system used consistently across all portals, with colour-blind-safe pairings plus icons and labels.
+- Dark mode. Trilingual i18n (English, Telugu, Hindi) with at least the citizen flow translated.
+- Citizen app should feel like a consumer app (Swiggy/Uber-level polish). The admin portal should feel like a pro ops console (Linear/Datadog-level). The govt portal should feel official and sober.
+- Read the frontend-design guidance if available and avoid templated defaults.
+
+RESPONSIBLE USE (visible in the product, worth marks)
+Synthetic-data banner and disclaimer, privacy (strip EXIF GPS from public photos, blur-faces/plates note, store the minimum PII), human-in-the-loop (the ML only recommends, an officer decides), the fairness audit, an anti-abuse system (duplicate and rate-limit detection, photo hash, GPS/QR proof-of-presence, trust score), and a "Limitations" page. Do not overclaim anywhere.
+
+DELIVERABLES
+1. Working monorepo: /web, /api, /ml, /cli, /data, /reports, Makefile, docker-compose.
+2. README with a one-command quickstart, architecture diagram (Mermaid), screenshots, model results table (real numbers), integration roadmap and limitations.
+3. MODEL_CARD.md and /reports with evaluation plots.
+4. PPT_OUTLINE.md mapped exactly to the Round 1 template: 01 Title & Team, 02 Problem & Target User, 03 Proposed Solution & USP (MUST), 04 Dataset Usage & Insights, 05 ML Approach (declare any API, baseline, split, metric), 06 Base Prototype & MVP (MUST; screens of the Round 1 prototype plus what Round 2 completes), 07 Architecture & Workflow, 08 Feasibility, Impact & Next Steps. Fill with real findings and numbers from the data.
+5. DEMO_SCRIPT.md: a 5-minute flow (CLI, then citizen report on a phone with the QR scan, then admin verify, then govt approve, then fix, then citizen confirms and gets rewarded), with a backup plan if the network fails (offline mode and a pre-recorded fallback).
+
+BUILD ORDER (time-boxed; the event runs 10 AM to 4 PM and Round 1 is due at 12 PM)
+PHASE 1 (Round 1 base prototype, about 90 min): data audit and join, EDA insights, the priority score plus one baseline-vs-ours model, citizen report flow (camera, GPS, category, submit), admin priority queue with explain panel, mock login, PWA manifest and installability, the PPT outline.
+PHASE 2 (Round 2 completion): all from-scratch models plus evaluation, QR scan and generator, rewards, duplicate detection, govt portal plus hash-chained ledger, status workflow, budget optimizer, anomaly monitor, fairness audit, offline queue, i18n, the CLI.
+PHASE 3 (polish): seed demo data, UI polish, Lighthouse fixes, README/MODEL_CARD, rehearse the demo script.
+If time is short, cut in this order: i18n, voice input, PDF certificate, docker. Never cut the from-scratch models, the explain panel, or the end-to-end workflow.
+
+RULES
+- Inspect real data before coding. Report any gaps or assumptions in a /docs/ASSUMPTIONS.md.
+- Real metrics only, with seeds and time-aware splits. No data leakage.
+- Run and test everything you build (including a mobile viewport check) before reporting done. Give me a short status after each phase with what works and what doesn't.
+- Commit in small steps with clear messages.
+Begin with Phase 1, step 1: the data audit.
+
+ADDITIONAL CLI REQUIREMENTS (cinematic, but all driven by real data and real model outputs; never fake metrics)
+Add: `qr <LOC>` (terminal QR that deep-links to the pre-filled citizen report), `watch` (live ticket/alert stream from the DB), `top` (Textual TUI dashboard: queue, sparklines, ledger tail, drill-down), `replay --speed` (time-travel of incident history with ranking movement arrows), `chaos --inject --zone` (synthetic spike injection, labeled synthetic, used to measure anomaly recall), `ledger --show/--tamper N` + `verify-chain` (hash-chain visualisation; tampering turns it red), `govt connect` (HMAC-signed escalation handshake with the simulated gateway), `fairness --diff` (before/after ranking with ▲▼), `ask "<query>"` (local rule/TF-IDF intent parser, no LLM), `bench` (baseline vs ours race), `doctor` (health checks), `show-tree N` (ASCII view of a learned tree), a braille/half-block terminal heatmap, `--theme matrix|amber|ice`, an easter egg `sudo fix-everything`, a `make warroom` tmux script, and a `demo` command that runs the full scripted sequence with pauses. Provide an asciinema/vhs tape to record a backup demo.
