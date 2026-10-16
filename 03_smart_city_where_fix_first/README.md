@@ -2,7 +2,9 @@
 
 <div align="center">
 
-![SUDHAR Logo](web/public/sudhar-logo.png)
+<img src="./sudhar%20logo.png" alt="SUDHAR Logo" width="360"/>
+
+<br/>
 
 **Intelligent Infrastructure Management for Modern Cities**
 
@@ -13,6 +15,10 @@
 *Where to Fix First? Data-driven urban infrastructure prioritization.*
 
 [Features](#-features) • [Demo](#-demo) • [Installation](#-installation) • [Architecture](#-architecture) • [API](#-api-documentation)
+
+<br/><br/>
+
+<img src="./main%20photo.png" alt="SUDHAR Main Overview" width="95%"/>
 
 </div>
 
@@ -67,16 +73,16 @@ fixfirst explain        # Explain model decisions
 
 ## 🖼️ Demo
 
-### Citizen App
+### 👥 Citizen Portal (Mobile PWA)
 <div align="center">
-  <img src="docs/assets/screenshots/citizen-home.png" width="250" alt="Citizen Home"/>
-  <img src="docs/assets/screenshots/report-new.png" width="250" alt="Report Issue"/>
-  <img src="docs/assets/screenshots/rewards.png" width="250" alt="Rewards"/>
+  <img src="./user.png" width="340" alt="SUDHAR Citizen Mobile App"/>
 </div>
 
-### Admin Dashboard
+<br/>
+
+### 🏛️ Admin Command Center & Intelligence Dashboard
 <div align="center">
-  <img src="docs/assets/screenshots/admin-dashboard.png" width="800" alt="Admin Dashboard"/>
+  <img src="./admin.png" width="95%" alt="SUDHAR Admin Dashboard"/>
 </div>
 
 ---
@@ -93,7 +99,7 @@ fixfirst explain        # Explain model decisions
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/Sudhar.git
+git clone https://github.com/Vedhant26/Sudhar.git
 cd Sudhar
 
 # Option 1: Using Makefile (Recommended)
@@ -446,7 +452,7 @@ Built with ❤️ for DATATHON 2026 Track 3
 ## 📞 Support
 
 - 📧 Email: support@sudhar.in
-- 🐛 Issues: [GitHub Issues](https://github.com/yourusername/Sudhar/issues)
+- 🐛 Issues: [GitHub Issues](https://github.com/Vedhant26/Sudhar/issues)
 - 📖 Docs: [Documentation](docs/)
 
 ---
